@@ -13,16 +13,15 @@ import os
 
 import dotenv
 
+# Load environment variables from .env file
+dotenv.load_dotenv()
+
 from .db_config import BASE_DIR, DATABASES
 from .drf_auth_config import AUTH_PASSWORD_VALIDATORS, REST_FRAMEWORK
 from .installed_apps import INSTALLED_APPS
 from .middleware_config import MIDDLEWARE
 from .openapi_config import SPECTACULAR_SETTINGS
 from .templates_config import TEMPLATES
-
-# Load environment variables from .env file
-dotenv.load_dotenv()
-
 
 SECRET_KEY = os.getenv('SECRET_KEY', '')
 
