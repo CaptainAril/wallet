@@ -30,10 +30,11 @@ class UserSignUpViewSet(GenericViewSet):
                     'success': True,
                     'message': 'User created successfully',
                 }, status=status.HTTP_201_CREATED)
+        except ValidationError as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
-            return Response({'success': False, 'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
-        # except ValidationError as e:
-        #     return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'success': False, 'error': str(e.args[0])}, status=status.HTTP_400_BAD_REQUEST)
+        
 
 
 class UserLoginViewSet(TokenObtainPairView, GenericViewSet):

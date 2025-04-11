@@ -2,6 +2,8 @@ from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 from rest_framework.authentication import authenticate
 
+from utilities.password_validation import validate_password
+
 from .models import User, UserKYCInformation, UserNextOfKin
 
 
@@ -11,6 +13,7 @@ class UserSignUpSerializer(serializers.ModelSerializer):
         fields = ['email', 'username', 'password', 'first_name', 'last_name', 'phone']
     
     def create(self, validated_data):
+        validate_password(validated_data['password'])
         return User.objects.create_user(**validated_data)
 
 
