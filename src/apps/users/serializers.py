@@ -25,19 +25,18 @@ class UserLoginSerializer(serializers.Serializer):
         email = attrs.get('email')
         password = attrs.get('password')
 
-        if not email and password:
+        if not email and not password:
             raise serializers.ValidationError(_('Eamil and Password required!'))
 
         user = authenticate(email=email, password=password)
         if not user:
             raise serializers.ValidationError(_('Incorrect Login Credentials!'))
-
         return user
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = '__all__'
+        exclude = ['password']
 
 class NextOfKinSerializer(serializers.ModelSerializer):
     class Meta:

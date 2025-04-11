@@ -39,12 +39,11 @@ class UserSignUpViewSet(GenericViewSet):
 
 class UserLoginViewSet(TokenObtainPairView, GenericViewSet):
     permission_classes = []
-    serializer_class = UserLoginSerializer
 
     @action(detail=False, methods=['post'])
     def login(self, request):
         # try:
-            serializer = self.get_serializer(data=request.data)
+            serializer = UserLoginSerializer(data=request.data)
             serializer.is_valid(raise_exception=True)
             user = serializer.validated_data
 
@@ -52,6 +51,9 @@ class UserLoginViewSet(TokenObtainPairView, GenericViewSet):
 
             _res = super().post(request=request)
             print(_res)
+            print(_res.data)
+
+
             print(type(_res))
             access_token = _res.data.get('access')
             refresh_token = _res.data.get('refresh')

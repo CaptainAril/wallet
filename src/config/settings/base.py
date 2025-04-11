@@ -17,7 +17,8 @@ import dotenv
 dotenv.load_dotenv()
 
 from .db_config import BASE_DIR, DATABASES
-from .drf_auth_config import AUTH_PASSWORD_VALIDATORS, REST_FRAMEWORK
+from .drf_auth_config import (AUTH_PASSWORD_VALIDATORS, REST_FRAMEWORK,
+                              SIMPLE_JWT)
 from .installed_apps import INSTALLED_APPS
 from .middleware_config import MIDDLEWARE
 from .openapi_config import SPECTACULAR_SETTINGS

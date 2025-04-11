@@ -20,7 +20,7 @@ def validate_password(password: str, user: Optional[object] = None) -> None:
     if not re.search(r"[A-Z]", password):
         raise ValidationError(
             _("Password must contain at least one uppercase letter."),
-            # code="password_no_uppercase",
+            code="password_no_uppercase",
         )
     if not re.search(r"[a-z]", password):
         raise ValidationError(
