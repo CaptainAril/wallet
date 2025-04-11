@@ -1,0 +1,51 @@
+from django.utils.translation import gettext_lazy as _
+from rest_framework import serializers
+from rest_framework.authentication import authenticate
+
+from .models import User, UserKYCInformation, UserNextOfKin
+
+
+class UserSignUpSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['email', 'username', 'password', 'first_name', 'last_name', 'phone']
+    
+    def create(self, validated_data):
+        return User.objects.create_user(**validated_data)
+
+
+class UserLoginSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    password = serializers.CharField()
+
+    def validate(self, attrs):
+        email = attrs.get('email')
+        password = attrs.get('password')
+
+        if not email and password:
+            raise serializers.ValidationError(_('Eamil and Password required!'))
+
+        user = authenticate(email=email, password=password)
+        if not user:
+            raise serializers.ValidationError(_('Incorrect Login Credentials!'))
+
+        return user
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = '__all__'
+
+class NextOfKinSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserNextOfKin
+        fields = '__all__'
+
+        
+class UserKYCInformationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserKYCInformation
+        fields = '__all__'
+
+
+
