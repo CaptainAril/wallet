@@ -26,6 +26,9 @@ from .templates_config import TEMPLATES
 
 SECRET_KEY = os.getenv('SECRET_KEY', '')
 
+BASE_URL = os.getenv('BASE_URL', 'http://localhost:8000')
+TOKEN_TTL = os.getenv('TOKEN_TTL', 60)  # in minutes
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 

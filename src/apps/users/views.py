@@ -1,4 +1,5 @@
 from django.db import transaction
+from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
@@ -11,8 +12,11 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
 
 from .models import User, UserNextOfKin
-from .serializers import (NextOfKinSerializer, UserLoginSerializer,
-                          UserSerializer, UserSignUpSerializer)
+from .serializers import (EmailVerificationRequestSerializer,
+                          EmailVerificationSerializer, NextOfKinSerializer,
+                          UserLoginSerializer, UserSerializer,
+                          UserSignUpSerializer)
+from .utils import send_email_verification, verify_email
 
 
 class UserSignUpViewSet(GenericViewSet):
@@ -42,7 +46,7 @@ class UserLoginViewSet(TokenObtainPairView, GenericViewSet):
 
     @action(detail=False, methods=['post'])
     def login(self, request):
-        # try:
+        try:
             serializer = UserLoginSerializer(data=request.data)
             serializer.is_valid(raise_exception=True)
             user = serializer.validated_data
@@ -72,11 +76,66 @@ class UserLoginViewSet(TokenObtainPairView, GenericViewSet):
                         'refresh_token': str(refresh_token)
                     }
                 }, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'success': False, 'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except ValidationError as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class EmailVerificationViewSet(GenericViewSet):
+    permission_classes = []
+    serializer_class = EmailVerificationRequestSerializer
+
+    @action(detail=False, methods=['post'], url_path='request-verification')
+    def send_verification_email(self, request):
+        try:
+            serializer = self.get_serializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            user = serializer.validated_data
+
+            if user.is_verified:
+                return Response(
+                    data={
+                        'success': False,
+                        'message': 'Email already verified'
+                    }, status=status.HTTP_400_BAD_REQUEST)
+            
+            verification_link = send_email_verification(user)
+
+            return Response(
+                data={
+                    'success': True,
+                    'message': 'Verification email sent successfully',
+                    'link': verification_link
+                }, status=status.HTTP_200_OK)
+        except ValidationError as e:
+            message = ", \n ".join(f"{f"{key} - " if key != "non_field_errors" else ''}{', '.join(value)}" for key, value in e.args[0].items())
+            return Response({
+                'success': False,
+                'error': message}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'success': False, 'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+    @extend_schema(request=None)
+    @action(detail=False, methods=['Get'], url_path='(?P<uid>[^/.]+)/(?P<token>[^/.]+)')
+    def verify_email(self, request, **kwargs):
+        try:
+            serializer = EmailVerificationSerializer(data=kwargs)
+            serializer.is_valid(raise_exception=True)
+            verify_email(kwargs['token'], kwargs['uid'])
+            return Response(
+                data={
+                    'success': True,
+                    'message': 'Email verified successfully'
+                }, status=status.HTTP_200_OK)
+        
+        except ValidationError as e:
+            message = ",\n ".join(f"{f"{key} - " if key != "non_field_errors" else ''}{', '.join(value)}" for key, value in e.args[0].items())
+            return Response({
+                'success': False,
+                'error': message}, status=status.HTTP_400_BAD_REQUEST)
         # except Exception as e:
         #     return Response({'success': False, 'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
-        # except ValidationError as e:
-        #     return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
 
 class UserViewSet(GenericViewSet):
     queryset = User.objects.all()
