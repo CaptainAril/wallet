@@ -31,6 +31,8 @@ class UserLoginSerializer(serializers.Serializer):
         user = authenticate(email=email, password=password)
         if not user:
             raise serializers.ValidationError(_('Incorrect Login Credentials!'))
+
+        assert user.is_verified, _('Please verify your email first.')
         return user
 
 class UserSerializer(serializers.ModelSerializer):
@@ -49,5 +51,25 @@ class UserKYCInformationSerializer(serializers.ModelSerializer):
         model = UserKYCInformation
         fields = '__all__'
 
+class EmailVerificationRequestSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+    def validate(self, attr):
+        attr['email'] = attr['email'].lower()
+        if not User.objects.filter(email=attr['email']).exists():
+            raise serializers.ValidationError(_('User with this email does not exist.'))
+        return User.objects.get(email=attr['email'])
 
 
+class EmailVerificationSerializer(serializers.Serializer):
+    token = serializers.CharField()
+    uid = serializers.CharField()
+
+    def validate(self, attrs):
+        token = attrs.get('token')
+        uid = attrs.get('uid')
+
+        if not token or not uid:
+            raise serializers.ValidationError(_('Token and UID are required.'))
+
+        return attrs
