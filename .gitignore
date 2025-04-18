@@ -135,6 +135,11 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+auth-env/
+gateway-env/
+users-env/
+wallet-env/
+
 
 # Spyder project settings
 .spyderproject
